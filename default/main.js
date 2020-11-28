@@ -1,6 +1,3 @@
-//TODO: I have 301 высвечивается
-//FIXME: Сложная система определения свободных мест. Да и то, работает странно
-
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -25,6 +22,7 @@ const NEEDED_COUNT_ENERGY_FOR_INTERMEDIATE_CREEP = 500;
 const NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP = 4; //300 + 200
 
 const BUILDERS_N_TIMES_LESS = 4;
+
 module.exports.loop = function(){
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
@@ -57,40 +55,44 @@ module.exports.loop = function(){
             roleBuilder.run(creep);
         }
     }
-    //TODO: переписать нижерасположенный if
-    //Чтобы действительно учитывалось количество ТЕКУЩИХ крипов
     var extensionCount = Game.spawns['Spawn1'].room.find(FIND_MY_STRUCTURES, {
         filter: { structureType: STRUCTURE_EXTENSION }
     }).length;
     if(extensionCount < NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP){
         if(Game.spawns['Spawn1'].energy >= NEEDED_COUNT_ENERGY_FOR_BASIC_CREEP){
             if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / BUILDERS_N_TIMES_LESS){
+                Memory.countExistedBuilders++;
                 Memory.countBuilders++;
-                Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,BUILDER_NAME+Memory.countBuilders, { memory: {role: BUILDER_ROLE}});
+                Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,BUILDER_NAME+Memory.countExistedBuilders, { memory: {role: BUILDER_ROLE}});
                 
             } else {
                 if(Memory.countUpgraders > Memory.countHarvesters){
+                    Memory.countExistedHarvesters++;
                     Memory.countHarvesters++;
-                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,HARVESTER_NAME+Memory.countHarvesters, { memory: {role: HARVESTER_ROLE}});
+                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,HARVESTER_NAME+Memory.countExistedHarvesters, { memory: {role: HARVESTER_ROLE}});
                 } else {
+                    Memory.countExistedUpgraders++;
                     Memory.countUpgraders++;
-                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,UPGRADER_NAME+Memory.countUpgraders, { memory: {role: UPGRADER_ROLE}});
+                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,UPGRADER_NAME+Memory.countExistedUpgraders, { memory: {role: UPGRADER_ROLE}});
                 }
             }
         }
     } else {
         if(Game.spawns['Spawn1'].room.energyAvailable >= NEEDED_COUNT_ENERGY_FOR_INTERMEDIATE_CREEP){
             if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / BUILDERS_N_TIMES_LESS){
+                Memory.countExistedBuilders++;
                 Memory.countBuilders++;
-                Game.spawns['Spawn1'].spawnCreep(BUILDER_BODY,BUILDER_NAME+Memory.countBuilders, { memory: {role: BUILDER_ROLE}});
+                Game.spawns['Spawn1'].spawnCreep(BUILDER_BODY,BUILDER_NAME+Memory.countExistedBuilders, { memory: {role: BUILDER_ROLE}});
                 
             } else {
                 if(Memory.countUpgraders > Memory.countHarvesters){
+                    Memory.countExistedHarvesters++;
                     Memory.countHarvesters++;
-                    Game.spawns['Spawn1'].spawnCreep(HARVESTER_BODY,HARVESTER_NAME+Memory.countHarvesters, { memory: {role: HARVESTER_ROLE}});
+                    Game.spawns['Spawn1'].spawnCreep(HARVESTER_BODY,HARVESTER_NAME+Memory.countExistedHarvesters, { memory: {role: HARVESTER_ROLE}});
                 } else {
+                    Memory.countExistedUpgraders++;
                     Memory.countUpgraders++;
-                    Game.spawns['Spawn1'].spawnCreep(UPGRADER_BODY,UPGRADER_NAME+Memory.countUpgraders, { memory: {role: UPGRADER_ROLE}});
+                    Game.spawns['Spawn1'].spawnCreep(UPGRADER_BODY,UPGRADER_NAME+Memory.countExistedUpgraders, { memory: {role: UPGRADER_ROLE}});
                 }
             }
         }
