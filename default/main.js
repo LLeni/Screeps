@@ -23,6 +23,9 @@ const NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP = 4; //300 + 200
 
 const BUILDERS_N_TIMES_LESS = 4;
 
+const CHECK_CREEPS_FOR_DYING_UNDER_N_TICKS = 1;
+const DYING_CREEP_MESSAGE = "Bye Daddy ;c";
+
 module.exports.loop = function(){
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
@@ -94,6 +97,22 @@ module.exports.loop = function(){
                     Memory.countUpgraders++;
                     Game.spawns['Spawn1'].spawnCreep(UPGRADER_BODY,UPGRADER_NAME+Memory.countExistedUpgraders, { memory: {role: UPGRADER_ROLE}});
                 }
+            }
+        }
+    }
+
+    for(var name in Game.creeps){
+        var creep = Game.creeps[name];
+        if(creep.ticksToLive <= CHECK_CREEPS_FOR_DYING_UNDER_N_TICKS){
+            creep.say(DYING_CREEP_MESSAGE);
+            if(creep.memory.role == HARVESTER_ROLE) {
+               countHarvesters--;
+            }
+            if(creep.memory.role == UPGRADER_ROLE) {
+                countUpgraders--;
+            }
+            if(creep.memory.role == BUILDER_ROLE) {
+                countBuilders--;
             }
         }
     }
