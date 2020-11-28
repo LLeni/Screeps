@@ -6,7 +6,7 @@ var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 
 const STANDART_PROPERTIES = [WORK, WORK, CARRY, MOVE]; //300
-const HARVEST_BODY = [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]; // 500
+const HARVESTER_BODY = [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]; // 500
 const UPGRADER_BODY = [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE]; //500
 const BUILDER_BODY = [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE]; // 500
 
