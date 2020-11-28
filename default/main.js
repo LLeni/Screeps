@@ -10,6 +10,21 @@ const HARVESTER_BODY = [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]; // 500
 const UPGRADER_BODY = [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE]; //500
 const BUILDER_BODY = [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE]; // 500
 
+
+const HARVESTER_NAME = 'Harvester';
+const UPGRADER_NAME = 'Upgrader';
+const BUILDER_NAME = 'Builder';
+
+const HARVESTER_ROLE = 'harvester';
+const UPGRADER_ROLE = 'upgrader';
+const BUILDER_ROLE = 'builder';
+
+const NEEDED_COUNT_ENERGY_FOR_BASIC_CREEP = 300;
+const NEEDED_COUNT_ENERGY_FOR_INTERMEDIATE_CREEP = 500;
+
+const NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP = 4; //300 + 200
+
+const BUILDERS_N_TIMES_LESS = 4;
 module.exports.loop = function(){
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
@@ -32,13 +47,13 @@ module.exports.loop = function(){
     
     for(var name in Game.creeps){
         var creep = Game.creeps[name];
-        if(creep.memory.role == 'harvester') {
+        if(creep.memory.role == HARVESTER_ROLE) {
             roleHarvester.run(creep);
         }
-        if(creep.memory.role == 'upgrader') {
+        if(creep.memory.role == UPGRADER_ROLE) {
             roleUpgrader.run(creep);
         }
-        if(creep.memory.role == 'builder') {
+        if(creep.memory.role == BUILDER_ROLE) {
             roleBuilder.run(creep);
         }
     }
@@ -47,35 +62,35 @@ module.exports.loop = function(){
     var extensionCount = Game.spawns['Spawn1'].room.find(FIND_MY_STRUCTURES, {
         filter: { structureType: STRUCTURE_EXTENSION }
     }).length;
-    if(extensionCount < 4){
-        if(Game.spawns['Spawn1'].energy >= 300){
-            if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / 4){
+    if(extensionCount < NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP){
+        if(Game.spawns['Spawn1'].energy >= NEEDED_COUNT_ENERGY_FOR_BASIC_CREEP){
+            if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / BUILDERS_N_TIMES_LESS){
                 Memory.countBuilders++;
-                Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,'Builder'+Memory.countBuilders, { memory: {role: 'builder'}});
+                Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,BUILDER_NAME+Memory.countBuilders, { memory: {role: BUILDER_ROLE}});
                 
             } else {
                 if(Memory.countUpgraders > Memory.countHarvesters){
                     Memory.countHarvesters++;
-                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,'Harvester'+Memory.countHarvesters, { memory: {role: 'harvester'}});
+                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,HARVESTER_NAME+Memory.countHarvesters, { memory: {role: HARVESTER_ROLE}});
                 } else {
                     Memory.countUpgraders++;
-                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,'Upgrader'+Memory.countUpgraders, { memory: {role: 'upgrader'}});
+                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,UPGRADER_NAME+Memory.countUpgraders, { memory: {role: UPGRADER_ROLE}});
                 }
             }
         }
     } else {
-        if(Game.spawns['Spawn1'].room.energyAvailable >= 500){
-            if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / 4){
+        if(Game.spawns['Spawn1'].room.energyAvailable >= NEEDED_COUNT_ENERGY_FOR_INTERMEDIATE_CREEP){
+            if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / BUILDERS_N_TIMES_LESS){
                 Memory.countBuilders++;
-                Game.spawns['Spawn1'].spawnCreep(BUILDER_BODY,'Builder'+Memory.countBuilders, { memory: {role: 'builder'}});
+                Game.spawns['Spawn1'].spawnCreep(BUILDER_BODY,BUILDER_NAME+Memory.countBuilders, { memory: {role: BUILDER_ROLE}});
                 
             } else {
                 if(Memory.countUpgraders > Memory.countHarvesters){
                     Memory.countHarvesters++;
-                    Game.spawns['Spawn1'].spawnCreep(HARVESTER_BODY,'Harvester'+Memory.countHarvesters, { memory: {role: 'harvester'}});
+                    Game.spawns['Spawn1'].spawnCreep(HARVESTER_BODY,HARVESTER_NAME+Memory.countHarvesters, { memory: {role: HARVESTER_ROLE}});
                 } else {
                     Memory.countUpgraders++;
-                    Game.spawns['Spawn1'].spawnCreep(UPGRADER_BODY,'Upgrader'+Memory.countUpgraders, { memory: {role: 'upgrader'}});
+                    Game.spawns['Spawn1'].spawnCreep(UPGRADER_BODY,UPGRADER_NAME+Memory.countUpgraders, { memory: {role: UPGRADER_ROLE}});
                 }
             }
         }
