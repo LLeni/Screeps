@@ -134,7 +134,7 @@ var spawnCreep = function(spawn, creepLevel, creepRole){
     if(creepRole == HARVESTER_ROLE) {
         Memory.countExistedHarvesters++;
         creepName = HARVESTER_NAME + Memory.countExistedHarvesters;
-        switch(creeplevel){
+        switch(creepLevel){
             case 'BEGINNER':
                 creepBody = STANDART_PROPERTIES;
                 break;
