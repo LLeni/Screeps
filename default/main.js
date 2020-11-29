@@ -8,6 +8,11 @@ const UPGRADER_BODY = [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE]; //500
 const BUILDER_BODY = [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE]; // 500
 
 
+const BEGINNER_LEVEL_NAME = 'BEGINNER';
+const INTERMEDIATE_LEVEL_NAME = 'INTERMEDIATE';
+const ADVANCED_LEVEL_NAME = 'ADVANCED';
+
+
 const HARVESTER_NAME = 'Harvester';
 const UPGRADER_NAME = 'Upgrader';
 const BUILDER_NAME = 'Builder';
@@ -24,7 +29,7 @@ const NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP = 4; //300 + 200
 const BUILDERS_N_TIMES_LESS = 4;
 
 const CHECK_CREEPS_FOR_DYING_UNDER_N_TICKS = 1;
-const DYING_CREEP_MESSAGE = "Bye Daddy ;c";
+const DYING_CREEP_MESSAGE = " said 'Bye Daddy ;c'";
 
 
 var countHarvesters;
@@ -35,7 +40,7 @@ module.exports.loop = function(){
     //Очистка из памяти тех крипов, которые на прошлом тике умерли
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
-            console.log(creep + " - умер ");
+            console.log(creep + DYING_CREEP_MESSAGE);
             delete Memory.creeps[i];
             
         }
@@ -80,54 +85,102 @@ module.exports.loop = function(){
         } 
     }).length;
     
+    chooseCreepToSpawn(Game.rooms['W7S39']);
 
+}
 
-    var extensionCount = Game.spawns['Spawn1'].room.find(FIND_MY_STRUCTURES, {
-        filter: { structureType: STRUCTURE_EXTENSION }
-    }).length;
+var chooseCreepToSpawn = function(room){
     
+    if(room.energyAvailable >= 300){
+        var creepLevel;
+        var creepRole;
     
-    //Спавн крипов
-    if(extensionCount < NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP || Memory.countHarvesters < 2 || Game.rooms['W7S39'].controller.level == 1){
-        if(Game.rooms['W7S39'].energyAvailable >= NEEDED_COUNT_ENERGY_FOR_BASIC_CREEP){
-            if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / BUILDERS_N_TIMES_LESS){
-                Memory.countExistedBuilders++;;
-                Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,BUILDER_NAME+Memory.countExistedBuilders, { memory: {role: BUILDER_ROLE}});
-                showCountCreeps();
+        //Определяем какого уровня крип должен быть
+        var extensionCount =  room.find(FIND_MY_STRUCTURES, {
+           
+            filter: { structureType: STRUCTURE_EXTENSION }
+        }).length;
+    
+        if(room.controller.level == 1 || extensionCount < NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP 
+            || countHarvesters < 2 || room.energyAvailable < 500){
+            creepLevel = BEGINNER_LEVEL_NAME;
+        } else {
+            creepLevel = INTERMEDIATE_LEVEL_NAME;
+        }
+        
+        
+    
+        //Определяем роль
+        if(countBuilders  < (countUpgraders + countHarvesters) / BUILDERS_N_TIMES_LESS){
+            creepRole = BUILDER_ROLE;
+        } else {
+            if(countHarvesters >= countUpgraders){
+                creepRole = UPGRADER_ROLE;
             } else {
-                if(Memory.countUpgraders >= Memory.countHarvesters){
-                    Memory.countExistedHarvesters++;
-                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,HARVESTER_NAME+Memory.countExistedHarvesters, { memory: {role: HARVESTER_ROLE}});
-                    showCountCreeps();
-                    
-                } else {
-                    Memory.countExistedUpgraders++;
-                    Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,UPGRADER_NAME+Memory.countExistedUpgraders, { memory: {role: UPGRADER_ROLE}});
-                    showCountCreeps();
-                    
-                }
+                creepRole = HARVESTER_ROLE;
             }
         }
-    } else {
-        if(Game.spawns['Spawn1'].room.energyAvailable >= NEEDED_COUNT_ENERGY_FOR_INTERMEDIATE_CREEP){
-            if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / BUILDERS_N_TIMES_LESS){
-                Memory.countExistedBuilders++;
-                Game.spawns['Spawn1'].spawnCreep(BUILDER_BODY,BUILDER_NAME+Memory.countExistedBuilders, { memory: {role: BUILDER_ROLE}});
-                showCountCreeps();
-            } else {
-                if(Memory.countUpgraders > Memory.countHarvesters){
-                    Memory.countExistedHarvesters++;
-                    Game.spawns['Spawn1'].spawnCreep(HARVESTER_BODY,HARVESTER_NAME+Memory.countExistedHarvesters, { memory: {role: HARVESTER_ROLE}});
-                    showCountCreeps();
-                    
-                } else {
-                    Memory.countExistedUpgraders++;
-                    Game.spawns['Spawn1'].spawnCreep(UPGRADER_BODY,UPGRADER_NAME+Memory.countExistedUpgraders, { memory: {role: UPGRADER_ROLE}});
-                    showCountCreeps();
-                }
-            }
+    
+        spawnCreep(room.find(FIND_MY_STRUCTURES, {
+            filter: { structureType: STRUCTURE_SPAWN }
+        })[0], creepLevel, creepRole);
+    }
+}
+
+var spawnCreep = function(spawn, creepLevel, creepRole){
+    var creepName;
+    var creepBody;
+    
+    if(creepRole == HARVESTER_ROLE) {
+        Memory.countExistedHarvesters++;
+        creepName = HARVESTER_NAME + Memory.countExistedHarvesters;
+        switch(creeplevel){
+            case 'BEGINNER':
+                creepBody = STANDART_PROPERTIES;
+                break;
+            case 'INTERMEDIATE':
+                creepBody = HARVEST_BODY;
+                break;
+            case 'ADVANCED':
+                creepBody = ADVANCED_HARVEST_BODY;
+                break;
         }
     }
+    
+    if(creepRole == UPGRADER_ROLE) {
+         Memory.countExistedUpgraders++;
+         creepName = UPGRADER_NAME + Memory.countExistedUpgraders;
+         switch(creepLevel){
+            case 'BEGINNER':
+                creepBody = STANDART_PROPERTIES;
+                break;
+            case 'INTERMEDIATE':
+                creepBody = UPGRADER_BODY;
+                break;
+            case 'ADVANCED':
+                creepBody = ADVANCED_UPGRADER_BODY;
+                break;
+        }
+    }
+    
+    if(creepRole == BUILDER_ROLE) { 
+         Memory.countExistedBuilders++;
+         creepName = BUILDER_NAME + Memory.countExistedBuilders;
+         switch(creeplevel){
+            case 'BEGINNER':
+                creepBody = STANDART_PROPERTIES;
+                break;
+            case 'INTERMEDIATE':
+                creepBody = BUILDER_BODY;
+                break;
+            case 'ADVANCED':
+                creepBody = ADVANCED_BUILDER_BODY;
+                break;
+        }
+    }
+    
+    spawn.spawnCreep(creepBody, creepName, {memory : {role: creepRole}});
+    showCountCreeps();
 }
 
 var showCountCreeps = function(){
