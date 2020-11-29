@@ -29,20 +29,39 @@ const DYING_CREEP_MESSAGE = "Bye Daddy ;c";
 module.exports.loop = function(){
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
+            var creep = Game.creeps[i]; 
+            if(creep.memory.role == HARVESTER_ROLE) {
+               countHarvesters--;
+            }
+            if(creep.memory.role == UPGRADER_ROLE) {
+                countUpgraders--;
+            }
+            if(creep.memory.role == BUILDER_ROLE) {
+                countBuilders--;
+            }
+            console.log(creep + " - умер ");
             delete Memory.creeps[i];
+            
         }
     }
     
     for(var name in Game.rooms){
-        console.log('Room "'+name+'" has '+Game.rooms[name].energyAvailable+' energy');
+        // var engrAvlbl = _.sum(Game.rooms[name].find(FIND_STRUCTURES, {
+        //         filter: (structure) => {
+        //             return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN);
+        //         }
+        //     }));
+        if(Game.rooms[name].energyAvailable % 10 == 0){
+             console.log('Room "'+name+'" has '+ Game.rooms[name].energyAvailable+' energy');
+        }
     }
-    for(var name in Game.spawns){
-       Game.spawns[name].room.visual.text(
-        'I have '+ (Game.spawns[name].energy+1) + ' en.',
-        Game.spawns[name].pos.x - 1,
-        Game.spawns[name].pos.y - 2,
-        {align: 'left', opacity: 0.4});
-    }
+    // for(var name in Game.spawns){
+    //   Game.spawns[name].room.visual.text(
+    //     'I have '+ (Game.spawns[name].energy+1) + ' en.',
+    //     Game.spawns[name].pos.x - 1,
+    //     Game.spawns[name].pos.y - 2,
+    //     {align: 'left', opacity: 0.4});
+    // }
     
     
     
@@ -61,22 +80,26 @@ module.exports.loop = function(){
     var extensionCount = Game.spawns['Spawn1'].room.find(FIND_MY_STRUCTURES, {
         filter: { structureType: STRUCTURE_EXTENSION }
     }).length;
-    if(extensionCount < NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP){
-        if(Game.spawns['Spawn1'].energy >= NEEDED_COUNT_ENERGY_FOR_BASIC_CREEP){
+    if(extensionCount < NEED_COUNT_EXTENSIONS_FOR_INTERMEDIATE_CREEP || Memory.countHarvesters < 2 || Game.rooms['W7S39'].controller.level == 1){
+        if(Game.rooms['W7S39'].energyAvailable >= NEEDED_COUNT_ENERGY_FOR_BASIC_CREEP){
             if(Memory.countBuilders < (Memory.countUpgraders + Memory.countHarvesters) / BUILDERS_N_TIMES_LESS){
                 Memory.countExistedBuilders++;
                 Memory.countBuilders++;
                 Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,BUILDER_NAME+Memory.countExistedBuilders, { memory: {role: BUILDER_ROLE}});
-                
+                showCountCreeps();
             } else {
-                if(Memory.countUpgraders > Memory.countHarvesters){
+                if(Memory.countUpgraders >= Memory.countHarvesters){
                     Memory.countExistedHarvesters++;
                     Memory.countHarvesters++;
                     Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,HARVESTER_NAME+Memory.countExistedHarvesters, { memory: {role: HARVESTER_ROLE}});
+                    showCountCreeps();
+                    
                 } else {
                     Memory.countExistedUpgraders++;
                     Memory.countUpgraders++;
                     Game.spawns['Spawn1'].spawnCreep(STANDART_PROPERTIES,UPGRADER_NAME+Memory.countExistedUpgraders, { memory: {role: UPGRADER_ROLE}});
+                    showCountCreeps();
+                    
                 }
             }
         }
@@ -86,16 +109,20 @@ module.exports.loop = function(){
                 Memory.countExistedBuilders++;
                 Memory.countBuilders++;
                 Game.spawns['Spawn1'].spawnCreep(BUILDER_BODY,BUILDER_NAME+Memory.countExistedBuilders, { memory: {role: BUILDER_ROLE}});
-                
+                showCountCreeps();
             } else {
                 if(Memory.countUpgraders > Memory.countHarvesters){
                     Memory.countExistedHarvesters++;
                     Memory.countHarvesters++;
                     Game.spawns['Spawn1'].spawnCreep(HARVESTER_BODY,HARVESTER_NAME+Memory.countExistedHarvesters, { memory: {role: HARVESTER_ROLE}});
+                    showCountCreeps();
+                    
                 } else {
                     Memory.countExistedUpgraders++;
                     Memory.countUpgraders++;
                     Game.spawns['Spawn1'].spawnCreep(UPGRADER_BODY,UPGRADER_NAME+Memory.countExistedUpgraders, { memory: {role: UPGRADER_ROLE}});
+                    showCountCreeps();
+                    
                 }
             }
         }
@@ -104,7 +131,9 @@ module.exports.loop = function(){
     for(var name in Game.creeps){
         var creep = Game.creeps[name];
         if(creep.ticksToLive <= CHECK_CREEPS_FOR_DYING_UNDER_N_TICKS){
+            
             creep.say(DYING_CREEP_MESSAGE);
+            console.log("Ну мы же здесь");
             if(creep.memory.role == HARVESTER_ROLE) {
                countHarvesters--;
             }
@@ -116,4 +145,12 @@ module.exports.loop = function(){
             }
         }
     }
+}
+
+var showCountCreeps = function(){
+    console.log('-------------------------------');
+    console.log('Количество сборщиков:   ' + Memory.countHarvesters);
+    console.log('Количество улучшателей: ' + Memory.countUpgraders);
+    console.log('Количество строителей:  ' + Memory.countBuilders);
+    console.log('-------------------------------');
 }
